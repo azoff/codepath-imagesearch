@@ -4,7 +4,6 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.net.MalformedURLException;
-import java.net.URL;
 
 /**
  * Created by Azoff on 10/9/13.
@@ -13,9 +12,9 @@ public class GoogleImageResult {
 
 	int width;
 	int height;
-	URL fullUrl;
-	URL thumbUrl;
 	String title;
+	String fullUrl;
+	String thumbUrl;
 
 	public int getWidth() {
 		return width;
@@ -29,11 +28,11 @@ public class GoogleImageResult {
 		return title;
 	}
 
-	public URL getFullUrl() {
+	public String getFullUrl() {
 		return fullUrl;
 	}
 
-	public URL getThumbUrl() {
+	public String getThumbUrl() {
 		return thumbUrl;
 	}
 
@@ -43,8 +42,8 @@ public class GoogleImageResult {
 		result.width    = obj.getInt("width");
 		result.height   = obj.getInt("height");
 		result.title    = obj.getString("titleNoFormatting");
-		result.fullUrl  = new URL(obj.getString("url"));
-		result.thumbUrl = new URL(obj.getString("tbUrl"));
+		result.fullUrl  = obj.getString("url");
+		result.thumbUrl = obj.getString("tbUrl");
 		return result;
 	}
 

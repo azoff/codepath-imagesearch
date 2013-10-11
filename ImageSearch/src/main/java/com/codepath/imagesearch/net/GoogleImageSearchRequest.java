@@ -14,75 +14,131 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
 
 /**
  * Created by Azoff on 10/9/13.
  */
 public class GoogleImageSearchRequest {
 
+	Task task;
 	Callback callback;
-	GoogleImageSearchParams params;
 
-	public interface Callback {
-		public void onSuccess(List<GoogleImageResult> results);
-		public void onError(Exception e);
+	public static abstract class Callback {
+		public void onStart() { }
+		public void onComplete() { }
+		public void onError(Exception e) { }
+		public void onResult(GoogleImageResult result) { }
 	}
 
-	private class Task extends AsyncTask<GoogleImageSearchParams, Integer, List<GoogleImageResult>> {
+	private class Task extends AsyncTask<GoogleImageSearchParams, GoogleImageResult, Exception> {
 
 		@Override
-		protected List<GoogleImageResult> doInBackground(GoogleImageSearchParams... params) {
+		protected Exception doInBackground(GoogleImageSearchParams... paramses) {
 
-			AndroidHttpClient client = AndroidHttpClient.newInstance("GoogleImageSearchClient");
+			AndroidHttpClient client = AndroidHttpClient.newInstance("GoogleImageSearchAgent");
 
-			try {
-				HttpGet request       = params[0].buildRequest();
-				HttpResponse response = client.execute(request);
-				HttpEntity responseBody = response.getEntity();
-				String responseJson = EntityUtils.toString(responseBody);
-				client.close();
-				if (responseJson == null) {
-					callback.onError(new NoHttpResponseException("No response returned from Google"));
-				} else {
-					JSONObject responseObj = new JSONObject(responseJson);
-					Integer statusCode = responseObj.optInt("responseStatus");
-					if (statusCode < 200 || statusCode > 299) {
-						String statusMessage = responseObj.optString("responseDetails");
-						callback.onError(new HttpResponseException(statusCode, statusMessage));
-					} else {
-						JSONObject responseData = responseObj.getJSONObject("responseData");
-						JSONArray responseResults = responseData.getJSONArray("results");
-						ArrayList<GoogleImageResult> results = new ArrayList<GoogleImageResult>();
-						for (int i=0; i<responseResults.length(); i++) {
-							JSONObject obj = responseResults.optJSONObject(i);
-							results.add(GoogleImageResult.fromJsonObject(obj));
-						}
-						callback.onSuccess(results);
-						return results;
+			for (GoogleImageSearchParams params : paramses) {
+
+				try {
+
+					HttpGet request = params.buildRequest();
+					HttpResponse response = client.execute(request);
+					HttpEntity responseBody = response.getEntity();
+
+					if (isCancelled())
+						return endTask(client, null);
+
+					String responseJson = EntityUtils.toString(responseBody);
+
+					if (responseJson == null) {
+						return endTask(client, new NoHttpResponseException("No response returned from Google"));
 					}
+
+					JSONObject responseObj = new JSONObject(responseJson);
+					Integer statusCode = responseObj.getInt("responseStatus");
+
+					if (statusCode < 200 || statusCode > 299) {
+						String statusMessage = responseObj.getString("responseDetails");
+						return endTask(client, new HttpResponseException(statusCode, statusMessage));
+					}
+
+					JSONObject responseData = responseObj.getJSONObject("responseData");
+					JSONArray responseResults = responseData.getJSONArray("results");
+
+					for (int i=0; i<responseResults.length(); i++) {
+
+						JSONObject obj = responseResults.getJSONObject(i);
+						GoogleImageResult result = GoogleImageResult.fromJsonObject(obj);
+						publishProgress(result);
+
+						if (isCancelled())
+							return endTask(client, null);
+
+					}
+
+				} catch (IOException e) {
+
+					return endTask(client, e);
+
+				} catch (JSONException e) {
+
+					return endTask(client, e);
+
 				}
-			} catch (IOException e) {
-				callback.onError(e);
-			} catch (JSONException e) {
-				callback.onError(e);
+
 			}
 
-			return null;
+			return endTask(client, null);
 
+		}
+
+		@Override
+		protected void onPreExecute() {
+			callback.onStart();
+		}
+
+		@Override
+		protected void onPostExecute(Exception e) {
+			if (e != null) callback.onError(e);
+			else           callback.onComplete();
+		}
+
+		@Override
+		protected void onProgressUpdate(GoogleImageResult... results) {
+			for (GoogleImageResult result : results)
+				callback.onResult(result);
+		}
+
+		@Override
+		protected void onCancelled(Exception e) {
+			onPostExecute(e);
+		}
+
+		@Override
+		protected void onCancelled() {
+			onCancelled(null);
+		}
+
+		private Exception endTask(AndroidHttpClient client, Exception e) {
+			client.close();
+			callback.onComplete();
+			return e;
 		}
 
 	}
 
-	public GoogleImageSearchRequest(GoogleImageSearchParams params, Callback callback) {
+	public GoogleImageSearchRequest(Callback callback) {
 		this.callback = callback;
-		this.params = params;
 	}
 
-	public void execute() {
-		Task task = new Task();
+	public void execute(GoogleImageSearchParams params) {
+		task = new Task();
 		task.execute(params);
+	}
+
+	public void cancel() {
+		if (task != null)
+			task.cancel(true);
 	}
 
 }

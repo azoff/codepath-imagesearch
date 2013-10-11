@@ -16,11 +16,11 @@ public class GoogleImageSearchParams {
 
 	public GoogleImageSearchParams(String query, List<NameValuePair> extraParams, String version) {
 		builder = Uri.parse("https://ajax.googleapis.com/ajax/services/search/images").buildUpon();
-		builder.appendQueryParameter("q", query);
-		builder.appendQueryParameter("v", version);
+		add("q", query);
+		add("v", version);
 		if (extraParams != null)
 			for (NameValuePair extraParam : extraParams)
-				builder.appendQueryParameter(extraParam.getName(), extraParam.getValue());
+				add(extraParam.getName(), extraParam.getValue());
 	}
 
 	public Uri buildUri() {
@@ -29,6 +29,10 @@ public class GoogleImageSearchParams {
 
 	public HttpGet buildRequest() {
 		return new HttpGet(buildUri().toString());
+	}
+
+	public void add(String key, String value) {
+		builder.appendQueryParameter(key, value);
 	}
 
 	public GoogleImageSearchParams(String query, List<NameValuePair> extraParams) {
