@@ -22,6 +22,9 @@ import java.util.List;
 
 public class SearchActivity extends Activity {
 
+	final int PAGE_SIZE = 4;
+
+	int offset;
 	EditText etQuery;
 	GridView gvResults;
 	SearchAdapter adapter;
@@ -35,8 +38,14 @@ public class SearchActivity extends Activity {
 		gvResults = (GridView) findViewById(R.id.gvResults);
 		adapter = new SearchAdapter(this, new ArrayList<GoogleImageResult>());
 		gvResults.setAdapter(adapter);
+		gvResults.setOnScrollListener(new InfiniteScrollListener());
 		progress = new ProgressDialog(this, ProgressDialog.STYLE_SPINNER);
 		progress.setMessage(getString(R.string.loading_image));
+	}
+
+	public boolean lastElementVisible(AdapterView v, int elementsBack) {
+		int lastElementPosition = v.getLastVisiblePosition();
+		return lastElementPosition < 0 || lastElementPosition == v.getAdapter().getCount() - elementsBack;
 	}
 
 	public GoogleImageSearchParams serializeForm() {
@@ -47,15 +56,33 @@ public class SearchActivity extends Activity {
 	}
 
 	public void search(View v) {
+		offset = 0;
 		adapter.clear();
-		SearchCallback callback = new SearchCallback();
 		if (!progress.isShowing()) progress.show();
-		for (int i=0; i<=20; i+=4) {
-			GoogleImageSearchRequest searchRequest = new GoogleImageSearchRequest(callback);
-			GoogleImageSearchParams params = serializeForm();
-			params.add("start", String.valueOf(i));
-			searchRequest.execute(params);
+		infiniteScroll(gvResults);
+	}
+
+	private void infiniteScroll(AdapterView v) {
+		SearchCallback callback = new SearchCallback();
+		GoogleImageSearchRequest searchRequest = new GoogleImageSearchRequest(callback);
+		GoogleImageSearchParams params = serializeForm();
+		params.add("start", String.valueOf(offset));
+		searchRequest.execute(params);
+		offset += PAGE_SIZE;
+	}
+
+	class InfiniteScrollListener implements GridView.OnScrollListener {
+
+		@Override
+		public void onScrollStateChanged(AbsListView view, int scrollState) {
+			infiniteScroll(view);
 		}
+
+		@Override
+		public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
+
+		}
+
 	}
 
 	class SearchAdapter extends ArrayAdapter<GoogleImageResult> {
@@ -108,6 +135,11 @@ public class SearchActivity extends Activity {
 			adapter.add(result);
 		}
 
+		@Override
+		public void onComplete() {
+			if (lastElementVisible(gvResults, 1))
+				infiniteScroll(gvResults);
+		}
 
 		@Override
 		public void onError(Exception e) {
