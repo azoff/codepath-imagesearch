@@ -8,17 +8,17 @@ import android.widget.RelativeLayout;
 /**
  * Created by Azoff on 10/11/13.
  */
-public class SquareImageView extends ImageView {
+public class SquareRelativeLayout extends RelativeLayout {
 
-	public SquareImageView(Context context) {
+	public SquareRelativeLayout(Context context) {
 		super(context);
 	}
 
-	public SquareImageView(Context context, AttributeSet attrs) {
+	public SquareRelativeLayout(Context context, AttributeSet attrs) {
 		super(context, attrs);
 	}
 
-	public SquareImageView(Context context, AttributeSet attrs, int defStyle) {
+	public SquareRelativeLayout(Context context, AttributeSet attrs, int defStyle) {
 		super(context, attrs, defStyle);
 	}
 

@@ -1,6 +1,7 @@
 package com.codepath.imagesearch.activity;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ public class SearchActivity extends Activity {
 	EditText etQuery;
 	GridView gvResults;
 	SearchAdapter adapter;
+	ProgressDialog progress;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -33,6 +35,8 @@ public class SearchActivity extends Activity {
 		gvResults = (GridView) findViewById(R.id.gvResults);
 		adapter = new SearchAdapter(this, new ArrayList<GoogleImageResult>());
 		gvResults.setAdapter(adapter);
+		progress = new ProgressDialog(this, ProgressDialog.STYLE_SPINNER);
+		progress.setMessage(getString(R.string.loading_image));
 	}
 
 	public GoogleImageSearchParams serializeForm() {
@@ -45,6 +49,7 @@ public class SearchActivity extends Activity {
 	public void search(View v) {
 		adapter.clear();
 		SearchCallback callback = new SearchCallback();
+		if (!progress.isShowing()) progress.show();
 		for (int i=0; i<=20; i+=4) {
 			GoogleImageSearchRequest searchRequest = new GoogleImageSearchRequest(callback);
 			GoogleImageSearchParams params = serializeForm();
@@ -74,14 +79,23 @@ public class SearchActivity extends Activity {
 	class ImageItemCallback extends AsyncDrawableRequest.Callback {
 
 		ImageView button;
+		ProgressBar progress;
 
 		public ImageItemCallback(View imageItem) {
 			button = (ImageView) imageItem.findViewById(R.id.ivThumb);
+			progress = (ProgressBar) imageItem.findViewById(R.id.pbProgress);
+		}
+
+		@Override
+		public void onStart() {
+			progress.setVisibility(View.VISIBLE);
 		}
 
 		@Override
 		public void onDrawable(Drawable d) {
+			progress.setVisibility(View.GONE);
 			button.setImageDrawable(d);
+			button.setVisibility(View.VISIBLE);
 		}
 
 	}
@@ -90,6 +104,7 @@ public class SearchActivity extends Activity {
 
 		@Override
 		public void onResult(GoogleImageResult result) {
+			if (progress.isShowing()) progress.hide();
 			adapter.add(result);
 		}
 

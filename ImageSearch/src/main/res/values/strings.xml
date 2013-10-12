@@ -7,5 +7,6 @@
     <string name="hello_world">Hello world!</string>
 	<string name="btn_search">Search</string>
 	<string name="et_query_hint">Search images...</string>
+	<string name="loading_image">Loading images...</string>
 
 </resources>
