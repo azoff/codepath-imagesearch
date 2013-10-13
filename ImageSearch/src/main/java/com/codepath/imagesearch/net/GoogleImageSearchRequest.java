@@ -50,9 +50,8 @@ public class GoogleImageSearchRequest {
 
 					String responseJson = EntityUtils.toString(responseBody);
 
-					if (responseJson == null) {
+					if (responseJson == null)
 						return endTask(client, new NoHttpResponseException("No response returned from Google"));
-					}
 
 					JSONObject responseObj = new JSONObject(responseJson);
 					Integer statusCode = responseObj.getInt("responseStatus");

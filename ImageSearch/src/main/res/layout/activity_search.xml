@@ -25,7 +25,7 @@
 				android:layout_height="wrap_content"
 				android:text="@string/btn_search"
 				android:id="@+id/btnSearch"
-				android:layout_weight="0" android:onClick="search"/>
+				android:layout_weight="0" android:onClick="startSearch"/>
 	</LinearLayout>
 	<GridView
 			android:layout_width="wrap_content"
@@ -38,7 +38,7 @@
 			android:stretchMode="columnWidth"
 			android:horizontalSpacing="1dp"
 			android:verticalSpacing="1dp"
-			android:columnWidth="@dimen/grid_size"
-			android:clickable="true"/>
+			android:columnWidth="130dp"
+			android:clickable="true" android:drawSelectorOnTop="false"/>
 
 </RelativeLayout>

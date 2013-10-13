@@ -10,7 +10,6 @@ import org.apache.http.client.methods.HttpRequestBase;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.HashMap;
 
 /**
  * Created by Azoff on 10/9/13.
@@ -19,7 +18,6 @@ public class AsyncDrawableRequest {
 
 	Task task;
 	Callback callback;
-	HashMap<String, Drawable> cache;
 
 	public static abstract class Callback {
 		public void onStart() { }
@@ -37,11 +35,6 @@ public class AsyncDrawableRequest {
 
 			for (String url : urls) {
 
-				if (cache.containsKey(url)) {
-					publishProgress(cache.get(url));
-					continue;
-				}
-
 				HttpRequestBase request = new HttpGet(url);
 
 				try {
@@ -54,7 +47,6 @@ public class AsyncDrawableRequest {
 
 					InputStream imageStream = responseBody.getContent();
 					Drawable drawable = Drawable.createFromStream(imageStream, "src");
-					cache.put(url, drawable);
 					publishProgress(drawable);
 
 				} catch (IOException e) {
@@ -72,8 +64,6 @@ public class AsyncDrawableRequest {
 		@Override
 		protected void onPreExecute() {
 			callback.onStart();
-			if (cache == null)
-				cache = new HashMap<String, Drawable>();
 		}
 
 		@Override
