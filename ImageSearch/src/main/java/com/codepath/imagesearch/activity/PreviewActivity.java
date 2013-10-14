@@ -71,6 +71,12 @@ public class PreviewActivity extends Activity {
 		return super.onCreateOptionsMenu(menu);
 	}
 
+	@Override
+	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+		super.onActivityResult(requestCode, resultCode, data);
+		temp.delete();
+	}
+
 	public void share(MenuItem item) {
 
 		try {
@@ -92,7 +98,7 @@ public class PreviewActivity extends Activity {
 				shareIntent.setAction(Intent.ACTION_SEND);
 				shareIntent.putExtra(Intent.EXTRA_STREAM, stream);
 				shareIntent.setType("image/png");
-				startActivity(Intent.createChooser(shareIntent, "Share image..."));
+				startActivityForResult(Intent.createChooser(shareIntent, "Share image..."), 1);
 
 			} else {
 
