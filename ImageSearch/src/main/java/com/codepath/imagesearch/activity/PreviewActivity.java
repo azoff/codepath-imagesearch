@@ -2,9 +2,16 @@ package com.codepath.imagesearch.activity;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.graphics.Bitmap;
+import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.net.Uri;
 import android.os.Bundle;
+import android.support.v4.content.FileProvider;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -12,7 +19,10 @@ import android.widget.Toast;
 import com.codepath.imagesearch.R;
 import com.codepath.imagesearch.net.AsyncPreviewRequest;
 
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
+import java.io.IOException;
 
 public class PreviewActivity extends Activity {
 
@@ -21,6 +31,10 @@ public class PreviewActivity extends Activity {
 
 	ImageView ivFull;
 	ProgressBar pbProgress;
+
+	File temp;
+	String url, title;
+	Drawable image;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -32,24 +46,66 @@ public class PreviewActivity extends Activity {
 		pbProgress = (ProgressBar) findViewById(R.id.pbProgress);
 
 		Intent requestor = getIntent();
-		String fullUrlString = requestor.getStringExtra(EXTRA_SRC);
 		PreviewCallback callback = new PreviewCallback(this);
 
-		Log.d("HERE", fullUrlString);
+		title = requestor.getStringExtra(EXTRA_TITLE);
+		if (title != null) {
+			setTitle(title);
+			ivFull.setContentDescription(title);
+		}
 
-		if (fullUrlString != null) {
-			String title = requestor.getStringExtra(EXTRA_TITLE);
-			if (title != null) {
-				setTitle(title);
-				ivFull.setContentDescription(title);
-			}
+		url = requestor.getStringExtra(EXTRA_SRC);
+		if (url != null) {
 			AsyncPreviewRequest request = new AsyncPreviewRequest(callback);
-			request.execute(fullUrlString);
+			request.execute(url);
 		} else {
 			callback.onError(new IllegalArgumentException("Invalid Image URL"));
 		}
 
+	}
 
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.activity_preview_menu, menu);
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	public void share(MenuItem item) {
+
+		try {
+
+			File cacheDir = new File(getCacheDir(), "images");
+
+			if (cacheDir.exists() || cacheDir.mkdirs()) {
+
+				temp = File.createTempFile("share", ".png", cacheDir);
+				FileOutputStream output = new FileOutputStream(temp);
+				Bitmap bitmap = ((BitmapDrawable)image).getBitmap();
+				bitmap.compress(Bitmap.CompressFormat.PNG, 100, output);
+				output.flush();
+				output.close();
+
+				Uri stream = FileProvider.getUriForFile(this, "com.codepath.imagesearch.fileprovider", temp);
+
+				Intent shareIntent = new Intent();
+				shareIntent.setAction(Intent.ACTION_SEND);
+				shareIntent.putExtra(Intent.EXTRA_STREAM, stream);
+				shareIntent.setType("image/png");
+				startActivity(Intent.createChooser(shareIntent, "Share image..."));
+
+			} else {
+
+				throw new IOException("Unable to make temp dir");
+
+			}
+
+		} catch (IOException e) {
+
+			Log.w("Sharing Exception", e);
+			Toast.makeText(this, e.getMessage(), Toast.LENGTH_LONG).show();
+
+		}
 	}
 
 	class PreviewCallback extends AsyncPreviewRequest.Callback {
@@ -87,6 +143,7 @@ public class PreviewActivity extends Activity {
 		@Override
 		public void onDrawable(Drawable d) {
 			ivFull.setImageDrawable(d);
+			image = d;
 		}
 
 		@Override

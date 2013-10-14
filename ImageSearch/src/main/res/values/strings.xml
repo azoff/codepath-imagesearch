@@ -4,12 +4,11 @@
     <string name="app_name">Image Search</string>
     <string name="title_activity_search">Search Images</string>
     <string name="action_settings">Settings</string>
-    <string name="hello_world">Hello world!</string>
     <string name="btn_search">Search</string>
-    <string name="et_query_hint">Search images...</string>
-    <string name="loading_image">Loading images...</string>
-    <string name="title_activity_preview">PreviewActivity</string>
-    <string name="dummy_button">Dummy Button</string>
-    <string name="dummy_content">DUMMY\nCONTENT</string>
+    <string name="et_query_hint">Search images…</string>
+    <string name="loading_image">Loading images…</string>
+    <string name="title_activity_preview">Preview Image</string>
+	<string name="filter_by_site">Filter by Site?</string>
+	<string name="share">Share</string>
 
 </resources>

@@ -31,6 +31,7 @@ public class SearchActivity extends Activity {
 	Context context;
 	EditText etQuery;
 	GridView gvResults;
+	ViewGroup llAdvanced;
 	SearchAdapter adapter;
 	ProgressDialog progress;
 	Map<String, Drawable> drawableCache;
@@ -41,6 +42,7 @@ public class SearchActivity extends Activity {
 		setContentView(R.layout.activity_search);
 		context = this;
 		etQuery = (EditText) findViewById(R.id.etQuery);
+		llAdvanced = (ViewGroup) findViewById(R.id.llAdvanced);
 		adapter = new SearchAdapter(context, new ArrayList<GoogleImageResult>());
 		drawableCache = new HashMap<String, Drawable>();
 		gvResults = (GridView) findViewById(R.id.gvResults);
@@ -59,7 +61,32 @@ public class SearchActivity extends Activity {
 	public GoogleImageSearchParams serializeForm(int offset, int pageSize) {
 		Editable text = etQuery.getText();
 		String query = text == null ? "" : text.toString();
-		return new GoogleImageSearchParams(query, pageSize, offset);
+		GoogleImageSearchParams params = new GoogleImageSearchParams(query, pageSize, offset);
+
+		// handle advanced options
+		for (int i=0; i<llAdvanced.getChildCount(); i++) {
+			View field = llAdvanced.getChildAt(i);
+			if (field != null) {
+				String name = (String) field.getTag();
+				String value = null;
+				if (field instanceof EditText) {
+					Editable editText = ((EditText)field).getText();
+					if (editText != null)
+						value = editText.toString();
+				} else if (field instanceof Spinner) {
+					Spinner options = ((Spinner)field);
+					if (options.getSelectedItemPosition() > 0) {
+						String option = (String) options.getSelectedItem();
+						if (option != null)
+							value = option.toLowerCase().replaceAll(" ", "");
+					}
+				}
+				if (value != null)
+					params.add(name, value);
+			}
+		}
+
+		return params;
 	}
 
 	public void startSearch(View v) {
@@ -91,9 +118,16 @@ public class SearchActivity extends Activity {
 	private void viewImage(GoogleImageResult result) {
 		Intent intent = new Intent(context, PreviewActivity.class);
 		intent.setAction(android.content.Intent.ACTION_VIEW);
-		intent.putExtra("title", result.getTitle());
-		intent.putExtra("src", result.getFullUrl());
+		intent.putExtra(PreviewActivity.EXTRA_TITLE, result.getTitle());
+		intent.putExtra(PreviewActivity.EXTRA_SRC, result.getFullUrl());
 		startActivity(intent);
+	}
+
+	public void toggleAdvanced(View view) {
+		if (((ToggleButton)view).isChecked())
+			llAdvanced.setVisibility(View.VISIBLE);
+		else
+			llAdvanced.setVisibility(View.GONE);
 	}
 
 	class ImageItemClickListener implements GridView.OnItemClickListener {

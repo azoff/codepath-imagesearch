@@ -11,27 +11,73 @@
 	<LinearLayout
 			android:layout_width="fill_parent"
 			android:layout_height="wrap_content"
-			android:id="@+id/linearLayout"
-			android:layout_marginBottom="@dimen/activity_vertical_margin">
+			android:id="@+id/llSimple"
+			android:gravity="bottom">
 		<EditText
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:id="@+id/etQuery"
 				android:singleLine="true"
-				android:hint="@string/et_query_hint" android:layout_weight="2"
-				android:layout_marginRight="@dimen/activity_horizontal_margin"/>
+				android:hint="@string/et_query_hint"
+				android:layout_weight="2"/>
+		<ToggleButton
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:id="@+id/tbAdvanced"
+				android:layout_weight="0"
+				android:textOn="-"
+				android:textOff="+"
+				android:textSize="20dp"
+				android:onClick="toggleAdvanced"/>
 		<Button
 				android:layout_width="wrap_content"
 				android:layout_height="wrap_content"
 				android:text="@string/btn_search"
 				android:id="@+id/btnSearch"
-				android:layout_weight="0" android:onClick="startSearch"/>
+				android:layout_weight="1"
+				android:onClick="startSearch"/>
+	</LinearLayout>
+	<LinearLayout
+			android:visibility="gone"
+			android:orientation="vertical"
+			android:layout_width="fill_parent"
+			android:layout_height="wrap_content"
+			android:layout_below="@+id/llSimple"
+			android:layout_centerHorizontal="true"
+			android:id="@+id/llAdvanced">
+		<Spinner
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/sSize"
+				android:tag="imgsz"
+				android:entries="@array/sizes_array"/>
+		<Spinner
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/sColor"
+				android:tag="imgcolor"
+				android:entries="@array/colors_array"/>
+		<Spinner
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/sType"
+				android:tag="imgtype"
+				android:entries="@array/types_array"/>
+		<EditText
+				android:singleLine="true"
+				android:hint="@string/filter_by_site"
+				android:layout_width="match_parent"
+				android:layout_height="wrap_content"
+				android:id="@+id/etSite"
+				android:tag="as_sitesearch"
+				android:textSize="@dimen/site_filter_text_size"/>
 	</LinearLayout>
 	<GridView
 			android:layout_width="wrap_content"
 			android:layout_height="fill_parent"
 			android:id="@+id/gvResults"
-			android:layout_below="@+id/linearLayout"
+			android:layout_marginTop="@dimen/activity_vertical_margin"
+			android:layout_below="@+id/llAdvanced"
 			android:layout_centerHorizontal="true"
 			android:choiceMode="singleChoice"
 			android:numColumns="auto_fit"
@@ -39,6 +85,6 @@
 			android:horizontalSpacing="1dp"
 			android:verticalSpacing="1dp"
 			android:columnWidth="130dp"
-			android:clickable="true" android:drawSelectorOnTop="false"/>
+			android:clickable="true" />
 
 </RelativeLayout>
