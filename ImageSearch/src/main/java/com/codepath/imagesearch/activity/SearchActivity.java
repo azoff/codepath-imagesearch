@@ -5,7 +5,6 @@ import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.drawable.Drawable;
-import android.net.Uri;
 import android.os.Bundle;
 import android.text.Editable;
 import android.util.Log;
@@ -19,7 +18,6 @@ import com.codepath.imagesearch.net.AsyncDrawableRequest;
 import com.codepath.imagesearch.net.GoogleImageSearchParams;
 import com.codepath.imagesearch.net.GoogleImageSearchRequest;
 
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -91,10 +89,10 @@ public class SearchActivity extends Activity {
 	}
 
 	private void viewImage(GoogleImageResult result) {
-		Intent intent = new Intent();
+		Intent intent = new Intent(context, PreviewActivity.class);
 		intent.setAction(android.content.Intent.ACTION_VIEW);
-		Uri imageUri = Uri.parse(result.getFullUrl());
-		intent.setDataAndType(imageUri,"image/*");
+		intent.putExtra("title", result.getTitle());
+		intent.putExtra("src", result.getFullUrl());
 		startActivity(intent);
 	}
 
